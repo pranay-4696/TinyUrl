@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:5173")
 public class TinyUrlController {
 
     private final TinyUrlService tinyUrlService;
@@ -19,13 +19,15 @@ public class TinyUrlController {
     }
 
     @GetMapping("/{shortCode}")
-    public ResponseEntity<UrlResponse> getUrlByShortcode(@PathVariable String shortCode) {
+    public ResponseEntity<Void> redirectToLongUrl(@PathVariable String shortCode) {
         Url url = tinyUrlService.findByShortCode(shortCode);
         if (url == null) {
             return ResponseEntity.notFound().build();
         }
-        UrlResponse urlResponse = convertToResponse(url);
-        return ResponseEntity.ok(urlResponse);
+        // Redirect to the long URL
+        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
+                .header("Location", url.getLongUrl())
+                .build();
     }
 
     @PostMapping("/shorten")
